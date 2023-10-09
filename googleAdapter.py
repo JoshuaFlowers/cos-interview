@@ -49,9 +49,14 @@ class GoogleAdapter:
     
     def search_emails(self, since):
         query = f'after:{since}'
-        resp = self.oauth.google.get(self._MAIL_API_URL, params={'q': query, 'maxResults': 1}, token = session['token'])
+        resp =  self.oauth.google.get(
+                    self._MAIL_API_URL,
+                    params = {  'q': query,
+                                'maxResults': 1
+                    }, 
+                    token = session['token']
+                )
         messages = resp.json().get('messages', [])
-        print(messages)
         return str(len(messages) > 0)
 
     
