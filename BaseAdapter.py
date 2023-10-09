@@ -44,7 +44,7 @@ class BaseAdapter:
             session['token'] = token
             current_app.logger.info(f'User authorization successful: {email}')
         except Exception as e:
-            current_app.logger(error(f'Error exchanging auth code for token')
+            current_app.logger.error(f'Error exchanging auth code for token')
     
     def search_emails(self, since):
         raise NotImplementedError("This method should be implemented in the child class.")

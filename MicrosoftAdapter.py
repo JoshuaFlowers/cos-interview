@@ -40,5 +40,5 @@ class MicrosoftAdapter(BaseAdapter):
             count = resp.json().get('@odata.count', 0)
             return str(count > 0)
         except Exception as e:
-            current_app.logger.error(f'Error searching email for user {session["email_addr"]})
+            current_app.logger.error(f'Error searching email for user {session["email_addr"]}')
     
