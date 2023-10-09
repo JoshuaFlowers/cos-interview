@@ -1,6 +1,6 @@
 from authlib.integrations.flask_client import OAuth
 from datetime import datetime
-from flask import session, url_for
+from flask import session, url_for, current_app
 import os
 from BaseAdapter import BaseAdapter
 
@@ -26,16 +26,19 @@ class MicrosoftAdapter(BaseAdapter):
         timestamp = datetime.utcfromtimestamp(int(since))
         formatted_timestamp = timestamp.strftime('%Y-%m-%dT%H:%M:%SZ')
         query = f'ReceivedDateTime ge {formatted_timestamp}'
-        resp =  self.oauth.microsoft.get(
-                    self._MAIL_API_URL,
-                    params = {  '$filter': query,
-                                '$count': 'true',
-                                '$select': 'receivedDateTime', 
-                                '$top': 1 
-                    },
-                    token = session['token']
-                )
-        messages = resp.json().get('messages', [])
-        count = resp.json().get('@odata.count', 0)
-        return str(count > 0)
+        try:
+            resp =  self.oauth.microsoft.get(
+                        self._MAIL_API_URL,
+                        params = {  '$filter': query,
+                                    '$count': 'true',
+                                    '$select': 'receivedDateTime', 
+                                    '$top': 1 
+                        },
+                        token = session['token']
+                    )
+            current_app.logger.info(f'Email Query Response: {resp.json()}')
+            count = resp.json().get('@odata.count', 0)
+            return str(count > 0)
+        except Exception as e:
+            current_app.logger.error(f'Error searching email for user {session["email_addr"]})
     

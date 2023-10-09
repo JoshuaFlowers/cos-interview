@@ -1,5 +1,5 @@
 from authlib.integrations.flask_client import OAuth
-from flask import session, url_for
+from flask import session, url_for, current_app
 import os
 from BaseAdapter import BaseAdapter
 from dotenv import load_dotenv
@@ -33,6 +33,7 @@ class GoogleAdapter(BaseAdapter):
                     }, 
                     token = session['token']
                 )
+        current_app.logger.info(f'Email search response: {resp.json()}')
         messages = resp.json().get('messages', [])
         return str(len(messages) > 0)
 

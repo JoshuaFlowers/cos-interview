@@ -4,6 +4,9 @@ from authlib.integrations.flask_client import OAuth
 from flask import Flask, request, abort, session, url_for
 from flask_session import Session
 import secrets
+import logging
+from logging.handlers import RotatingFileHandler
+import os
 
 app = Flask(__name__)
 
@@ -11,6 +14,22 @@ app.secret_key = secrets.token_hex()
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 oauth = OAuth(app)
+
+if not os.path.exists('logs'):
+    os.mkdir('logs')
+
+# Setup a rotating file handler, max 10MB per file with a backup count of 10 files
+file_handler = RotatingFileHandler('logs/cos_app.log', maxBytes=10*1024*1024, backupCount=10)
+# Set the logging format
+file_handler.setFormatter(logging.Formatter(
+    '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+))
+file_handler.setLevel(logging.INFO)  # or DEBUG, ERROR, etc.
+app.logger.addHandler(file_handler)
+
+# Set the base logger level
+app.logger.setLevel(logging.INFO)
+app.logger.info('COS App startup')
 
 app_url = 'https://hallowelt.uk'
 
