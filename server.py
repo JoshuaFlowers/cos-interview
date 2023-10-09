@@ -1,9 +1,9 @@
+from GoogleAdapter import GoogleAdapter
+from MicrosoftAdapter import MicrosoftAdapter
+from authlib.integrations.flask_client import OAuth
 from flask import Flask, request, abort, session, url_for
 from flask_session import Session
-from authlib.integrations.flask_client import OAuth
 import secrets
-from googleAdapter import GoogleAdapter
-from microsoftAdapter import MicrosoftAdapter
 
 app = Flask(__name__)
 
@@ -17,10 +17,7 @@ app_url = 'https://hallowelt.uk'
 SUCCESS_ROUTE = '/success'
 
 GOOGLE_OAUTH_SUCCESS_ROUTE = '/google/oauth/success'
-GOOGLE_TOKEN_EXCHANGE_SUCCESS_ROUTE = '/google/token/success'
-
 MICROSOFT_OAUTH_SUCCESS_ROUTE = '/microsoft/oauth/success'
-MICROSOFT_TOKEN_EXCHANGE_SUCCESS_ROUTE = '/microsoft/token/success'
 
 adapters =  {
                 'gmail.com': GoogleAdapter(oauth),
@@ -65,6 +62,12 @@ def microsoft_oauth_success():
     adapters['outlook.com'].oauth_success()
     return app.redirect(url_for('success'))
 
+@app.route('/oauth/success')
+def oauth_success():
+    domain = session.get('domain')
+    adapters[domain].oauth_success()
+    return app.redirect(url_for('success'))
+
 @app.route('/emails/search')
 def search_emails():
     since = request.args.get('since')
@@ -72,4 +75,4 @@ def search_emails():
     return adapters[domain].search_emails(since)
 
 if __name__ == '__main__':
-    app.run(debug=True, ssl_context=('/etc/letsencrypt/live/hallowelt.uk/fullchain.pem', '/etc/letsencrypt/live/hallowelt.uk/privkey.pem'))
+    app.run(debug=True)
