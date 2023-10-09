@@ -35,9 +35,6 @@ app_url = 'https://hallowelt.uk'
 
 SUCCESS_ROUTE = '/success'
 
-GOOGLE_OAUTH_SUCCESS_ROUTE = '/google/oauth/success'
-MICROSOFT_OAUTH_SUCCESS_ROUTE = '/microsoft/oauth/success'
-
 adapters =  {
                 'gmail.com': GoogleAdapter(oauth),
                 'outlook.com': MicrosoftAdapter(oauth)
@@ -48,7 +45,7 @@ adapters =  {
 def connect_email():
     email_addr = request.args.get('email')
     if email_addr is None:
-        abort(400) #add better indicator
+        abort(400)
 
     email_addr_parts = email_addr.split('@')
 
@@ -69,17 +66,6 @@ def connect_email():
 @app.route(SUCCESS_ROUTE)
 def success():
     return "success"
-
-@app.route(GOOGLE_OAUTH_SUCCESS_ROUTE)
-def google_oauth_success():
-    domain = 'gmail.com'
-    adapters[domain].oauth_success()
-    return app.redirect(url_for('success'))
-
-@app.route(MICROSOFT_OAUTH_SUCCESS_ROUTE)
-def microsoft_oauth_success():
-    adapters['outlook.com'].oauth_success()
-    return app.redirect(url_for('success'))
 
 @app.route('/oauth/success')
 def oauth_success():
