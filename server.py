@@ -7,6 +7,7 @@ from googleapiclient.discovery import build
 import secrets
 import json
 import time
+from googleAdapter import googleAdapter
 
 app = Flask(__name__)
 
@@ -22,6 +23,13 @@ GOOGLE_SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 GOOGLE_OAUTH_SUCCESS_ROUTE = '/google/oauth/success'
 GOOGLE_TOKEN_EXCHANGE_SUCCESS_ROUTE = '/google/token/success'
 
+
+MICROSOFT_OAUTH_SUCCESS_ROUTE = '/microsoft/oauth/success'
+
+adapters = {
+        'gmail.com': googleAdapter(oauth)#, session)
+        }
+
 google_client_json = None
 with open(GOOGLE_CLIENT_SECRETS_LOCATION, 'rb') as f:
     google_client_json = json.loads(f.read())
@@ -36,9 +44,9 @@ OAUTH_PROVIDERS = {
         'authorize_params':{'access_type': 'offline'},
         'access_token_url':google_client_json['token_uri'],
         'access_token_params':None,
-        'refresh_token_url':None,
+        'refresh_token_url':google_client_json['token_uri'],
         'redirect_to':GOOGLE_OAUTH_SUCCESS_ROUTE,
-        'client_kwargs':{'scope': ' '.join(GOOGLE_SCOPES)}
+        'client_kwargs':{'scope': ' '.join(GOOGLE_SCOPES), 'code_challenge_method': 'S256'}
     },
 }
 
@@ -48,7 +56,9 @@ for provider_name, provider_data in OAUTH_PROVIDERS.items():
 
 
 def microsoft_oauth(email_addr = None):
-    return 200
+    redirect_uri = url_for('microsoft_oauth_success', _external=True)
+    auth_params = {}
+    return oauth.microsoft.authorize_redirect(redirect_uri, **auth_params)
 
 def google_oauth(email_addr = None):
     redirect_uri = url_for('google_oauth_success', _external=True)
@@ -61,6 +71,9 @@ def insert_user(email, authorized, token, last_authenticated):
     db.insert_user(email, authorized, token, last_authenticated)
 
 def refresh_user_token(email, token):
+    if 'refresh_token' not in token:
+        return None
+    refresh_token = token['refresh_token']
     return None
 
 def get_user_token(email):
@@ -102,19 +115,30 @@ def connect_email():
     session['email_addr'] = email_addr
 
     print(auth_funcs[email_domain])
-    return auth_funcs[email_domain](email_addr = email_addr)
+    #return auth_funcs[email_domain](email_addr = email_addr)
+    return adapters[email_domain].authorize(email_addr = email_addr)
 
 SUCCESS_ROUTE = '/success'
 success_page = app_url + SUCCESS_ROUTE
 
 @app.route(SUCCESS_ROUTE)
 def success():
-    session.clear()
+    #session.clear()
     return "success"
 
 @app.route(GOOGLE_OAUTH_SUCCESS_ROUTE)
 def google_oauth_success():
     token = oauth.google.authorize_access_token()
+    email = session.get('email_addr')
+    print(email)
+    if token is not None:
+        insert_user(email, 1, json.dumps(token), int(time.time()))
+    print(token)
+    return app.redirect(success_page)
+
+@app.route(MICROSOFT_OAUTH_SUCCESS_ROUTE)
+def microsoft_oauth_success():
+    token = oauth.microsoft.authorize_access_token()
     email = session.get('email_addr')
     print(email)
     if token is not None:
