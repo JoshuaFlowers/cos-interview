@@ -1,17 +1,13 @@
-from cosDB import cosDB
-from flask import Flask, request, abort, session, url_for
-from flask_session import Session
+from flask import session, url_for
 from authlib.integrations.flask_client import OAuth
-import json
 
-class googleAdapter:
+class GoogleAdapter:
 
     _CLIENT_ID = '698626242388-1cb2m9tkn0qmnhli127ei2v9ech1cndk.apps.googleusercontent.com'
     _CLIENT_SECRET = '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'
     _AUTH_URL = 'https://accounts.google.com/o/oauth2/auth'
     _ACCESS_TOKEN_URL = 'https://oauth2.googleapis.com/token'
     _REFRESH_TOKEN_URL = 'https://oauth2.googleapis.com/token'
-    _CLIENT_SECRETS_LOCATION = 'gmail_client_secret.json'
     _SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
     _OAUTH_SUCCESS_ROUTE = '/google/oauth/success'
     _TOKEN_EXCHANGE_SUCCESS_ROUTE = '/google/token/success'

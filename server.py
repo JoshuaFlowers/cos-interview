@@ -1,13 +1,9 @@
-from cosDB import cosDB
-import requests
 from flask import Flask, request, abort, session, url_for
 from flask_session import Session
 from authlib.integrations.flask_client import OAuth
-from googleapiclient.discovery import build
 import secrets
-import json
-import time
-from googleAdapter import googleAdapter
+from googleAdapter import GoogleAdapter
+from microsoftAdapter import MicrosoftAdapter
 
 app = Flask(__name__)
 
@@ -26,15 +22,10 @@ GOOGLE_TOKEN_EXCHANGE_SUCCESS_ROUTE = '/google/token/success'
 MICROSOFT_OAUTH_SUCCESS_ROUTE = '/microsoft/oauth/success'
 MICROSOFT_TOKEN_EXCHANGE_SUCCESS_ROUTE = '/microsoft/token/success'
 
-adapters = {
-            'gmail.com': googleAdapter(oauth)
-        }
-
-
-def microsoft_oauth(email_addr = None):
-    redirect_uri = url_for('microsoft_oauth_success', _external=True)
-    auth_params = {}
-    return oauth.microsoft.authorize_redirect(redirect_uri, **auth_params)
+adapters =  {
+                'gmail.com': GoogleAdapter(oauth),
+                'outlook.com': MicrosoftAdapter(oauth)
+            }
 
 
 @app.route('/connect/email')
@@ -71,7 +62,7 @@ def google_oauth_success():
 
 @app.route(MICROSOFT_OAUTH_SUCCESS_ROUTE)
 def microsoft_oauth_success():
-    adapters['microsoft.com'].oauth_success()
+    adapters['outlook.com'].oauth_success()
     return app.redirect(url_for('success'))
 
 @app.route('/emails/search')
