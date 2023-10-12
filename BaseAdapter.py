@@ -29,22 +29,27 @@ class BaseAdapter:
         redirect_uri = url_for('oauth_success', _external=True)
         auth_params = {'login_hint': email_addr}
         try:
-            return getattr(self.oauth, self.name).authorize_redirect(redirect_uri, **auth_params)
+            resp = getattr(self.oauth, self.name).authorize_redirect(redirect_uri, **auth_params)
+            current_app.logger.info(f'Authorize: Status Code {resp.status_code}, Redirect URL: {resp.location}')
+            return resp
         except Exception as e:
             current_app.logger.error(f'Error authorizing user {email_addr} with {self.name}:\n{e}')
             return None
     
     def success(self):
         return 'success'
+
+    def exchange_for_token(self):
+        return getattr(self.oauth, self.name).authorize_access_token()
     
     def oauth_success(self):
         try:
-            token = getattr(self.oauth, self.name).authorize_access_token()
+            token = self.exchange_for_token()
             email = session.get('email_addr')
             session['token'] = token
             current_app.logger.info(f'User authorization successful: {email}')
         except Exception as e:
-            current_app.logger.error(f'Error exchanging auth code for token')
+            current_app.logger.error(f'Error exchanging auth code for token: {e}')
     
     def search_emails(self, since):
         raise NotImplementedError("This method should be implemented in the child class.")

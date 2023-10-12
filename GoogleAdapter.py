@@ -24,16 +24,19 @@ class GoogleAdapter(BaseAdapter):
         self.name = "google"
         super().__init__(oauthConnector)
 
-    def search_emails(self, since):
+    def query_email_provider(self, since):
         query = f'after:{since}'
-        resp =  self.oauth.google.get(
+        return  self.oauth.google.get(
                     self._MAIL_API_URL,
                     params = {  'q': query,
                                 'maxResults': 1
                     }, 
                     token = session['token']
                 )
-        current_app.logger.info(f'Email search response: {resp.json()}')
+
+
+    def search_emails(self, since):
+        resp = self.query_email_provider(since)
         messages = resp.json().get('messages', [])
         return str(len(messages) > 0)
 

@@ -3,10 +3,10 @@ from MicrosoftAdapter import MicrosoftAdapter
 from authlib.integrations.flask_client import OAuth
 from flask import Flask, request, abort, session, url_for
 from flask_session import Session
-import secrets
-import logging
 from logging.handlers import RotatingFileHandler
+import logging
 import os
+import secrets
 
 app = Flask(__name__)
 
@@ -76,7 +76,14 @@ def oauth_success():
 @app.route('/emails/search')
 def search_emails():
     since = request.args.get('since')
-    domain = session['domain']
+    try:
+        domain = session['domain']
+    except KeyError as ke:
+        app.logger.error(f'Error, domain not in session: {ke}')
+        abort(400)
+    except Exception as e:
+        app.logger.error(f'Error getting domain from session: {e}')
+        abort(400)
     return adapters[domain].search_emails(since)
 
 if __name__ == '__main__':
