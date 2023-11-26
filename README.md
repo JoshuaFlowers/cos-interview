@@ -1,4 +1,4 @@
-This program uses a flask server to authenticate users and search for recent emails. It utilized the Authlib library for authorization and account access using OAuth2.0.
+This program uses a flask server to authenticate users and search for recent emails. It utilizes the Authlib library for authorization and account access using OAuth2.0.
 
 To add a new authentication partner, create a new adapter which implements the authorize and search_emails methods, then add it to the list of adapters in the server with the appropriate domain mapping.
 
@@ -18,3 +18,5 @@ Further customization can be achieved using custom success endpoints for each pa
 The Authlib library has been implemented in order to utilize features and take advantage of continuous development being done without having to maintain them ourselves. Using this library enables for future feature development. While the Authlib library is convenient, it does come with a learning curve for those unfamiliar with them, perhaps moreso than using REST apis. Additionally, the use of a library comes with things happening under the hood that require further dives into the docs or code base in order to fully understand what is happening at each step. Implementing the OAuth2.0 specs from scratch would potentially make the developer more familiar with what was taking place, but would come at the added cost of having to maintain that codebase and leave open the possibilities of introducing bugs and security holes. 
 
 The use of sessions has been implemented to store user data temporarily. For a more complete solution, a database would be used for persistent storage including the refresh token which is recommended to be kept in longterm storage.
+
+It is recommended to run this using nginx with a reverse proxy via gunicorn
